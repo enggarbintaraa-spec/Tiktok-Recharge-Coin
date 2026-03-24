@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok - Get Coins</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F8F8; color: #161823; -webkit-text-size-adjust: 100%; }
+        .header-shadow { border-bottom: 0.5px solid #E1E1E2; }
+        
+        .item-card { 
+            background-color: #F8F8F8; 
+            border: 1px solid #F1F1F2; 
+            border-radius: 8px; 
+            transition: all 0.2s; 
+            cursor: pointer; 
+            height: 70px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        .active-card { 
+            background-color: #FEF2F4 !important; 
+            border: 1.5px solid #FE2C55 !important; 
+        }
+
+        .sheet-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0); display: none; align-items: flex-end; justify-content: center; transition: background 0.3s ease; }
+        .overlay-visible { display: flex !important; background: rgba(0,0,0,0.5) !important; }
+        .bottom-sheet { background: white; border-radius: 12px 12px 0 0; width: 100%; max-width: 550px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sheet-open { transform: translateY(0) !important; }
+        .keypad-grid button { background: white; height: 60px; font-weight: 600; font-size: 22px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .keypad-grid button:active { background-color: #F3F4F6; }
+        
+        .custom-radio:checked + .radio-dot { display: block; }
+
+        #policy-content { 
+            max-height: 32px; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease-out; 
+        }
+        .expanded #policy-content { 
+            max-height: 300px; 
+        }
+        .expanded #policy-arrow { 
+            transform: rotate(180deg); 
+        }
+
+        /* ANIMASI BOLA BERTABRAKAN */
+        .loader-dots { display: flex; justify-content: center; align-items: center; position: relative; height: 20px; margin-bottom: 30px; }
+        .dot { width: 18px; height: 18px; border-radius: 50%; position: absolute; }
+        .dot-red { background-color: #FE2C55; animation: move-red 0.6s infinite ease-in-out alternate; z-index: 2; }
+        .dot-cyan { background-color: #25F4EE; animation: move-cyan 0.6s infinite ease-in-out alternate; z-index: 1; }
+        @keyframes move-red { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+        @keyframes move-cyan { from { transform: translateX(14px); } to { transform: translateX(-14px); } }
+
+        .popup-content {
+            background: white;
+            width: 85%;
+            max-width: 320px;
+            border-radius: 16px;
+            padding: 35px 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 110;
+        }
+
+        .success-circle {
+            width: 85px; 
+            height: 85px; 
+            background-color: #69C54F; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-white h-[52px] flex items-center px-4 sticky top-0 z-50 justify-between header-shadow">
+        <div class="w-[50px]"></div>
+        <div class="flex items-center">
+            <span class="text-[20px] font-bold">Get Coins</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="cursor-pointer text-gray-700">
+                <svg width="22" height="22" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M8 6C8 4.89543 8.89543 4 10 4H30L40 14V42C40 43.1046 39.1046 44 38 44H10C8.89543 44 8 43.1046 8 42V6Z"/><path d="M16 20H32" stroke-linecap="round"/><path d="M16 28H32" stroke-linecap="round"/><path d="M16 36H24" stroke-linecap="round"/></svg>
+            </div>
+            <div class="cursor-pointer text-gray-700">
+                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44Z"/><path d="M24 28.6248V34.6248" stroke-linecap="round"/><path d="M24 22.6248C27.3137 22.6248 30 19.9385 30 16.6248C30 13.3111 27.3137 10.6248 24 10.6248C20.6863 10.6248 18 13.3111 18 16.6248" stroke-linecap="round"/></svg>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-[550px] mx-auto bg-white min-h-screen pb-40">
+        <div class="flex justify-center pt-4">
+            <div class="flex items-center gap-1.5 px-3 py-1 bg-[#F0FDF9] border border-[#D1FAE5] rounded-full">
+                <svg width="12" height="12" viewBox="0 0 48 48" fill="none" stroke="#00C49F" stroke-width="6"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44Z"/><path d="M16 24L22 30L34 18"/></svg>
+                <span class="text-[#00C49F] text-[11px] font-bold">Secure payment</span>
+            </div>
+        </div>
+
+        <div class="p-4 flex items-center gap-3">
+            <div class="w-[48px] h-[48px] rounded-full overflow-hidden flex items-center justify-center">
+                <img src="vecteezy_tiktok-png-icon_16716450.png" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-grow">
+                <input type="text" id="username-input" placeholder="Search username..." oninput="updateUsernameDisplay()" class="w-full px-3 py-2 border border-gray-200 rounded-md text-[16px] focus:outline-none focus:border-[#FE2C55]">
+            </div>
+        </div>
+
+        <div class="px-4 py-2">
+            <h2 class="text-[17px] font-bold">Recharge</h2>
+            <p class="text-[#FE2C55] text-[13px] mt-1 font-medium">Save up to 25% with lower third-party service fees.</p>
+        </div>
+
+        <div class="px-4 grid grid-cols-3 gap-2.5">
+            <div onclick="selectCoin(this, 30, 0.35)" class="item-card active-card">
+                <div class="flex items-center gap-1 font-bold text-[17px]"><img src="coin.png" class="w-[18px]"> 30</div>
+                <div class="text-[12px] text-gray-500 font-medium">$0.35</div>
+            </div>
+            <div onclick="selectCoin(this, 350, 3.70)" class="item-card">
+                <div class="flex items-center gap-1 font-bold text-[17px]"><img src="coin.png" class="w-[18px]"> 350</div>
+                <div class="text-[12px] text-gray-500 font-medium">$3.70</div>
+            </div>
+            <div onclick="selectCoin(this, 700, 7.40)" class="item-card">
+                <div class="flex items-center gap-1 font-bold text-[17px]"><img src="coin.png" class="w-[18px]"> 700</div>
+                <div class="text-[12px] text-gray-500 font-medium">$7.40</div>
+            </div>
+            <div onclick="selectCoin(this, 1400, 14.80)" class="item-card">
+                <div class="flex items-center gap-1 font-bold text-[17px]"><img src="coin.png" class="w-[18px]"> 1,400</div>
+                <div class="text-[12px] text-gray-500 font-medium">$14.80</div>
+            </div>
+            <div onclick="selectCoin(this, 3500, 37.00)" class="item-card">
+                <div class="flex items-center gap-1 font-bold text-[17px]"><img src="coin.png" class="w-[18px]"> 3,500</div>
+                <div class="text-[12px] text-gray-500 font-medium">$37.00</div>
+            </div>
+            <div onclick="openKeypad()" class="item-card">
+                <div class="font-bold text-[14px] text-gray-800">Custom</div>
+            </div>
+        </div>
+
+        <div class="m-4 p-4 border border-gray-100 rounded-xl flex items-center justify-between bg-[#FAFAFA]">
+            <div class="flex items-center gap-3">
+                <div class="text-2xl">🎁</div>
+                <div>
+                    <div class="font-bold text-[14px]">Get up to <span class="text-orange-500">$150.00 cashback</span></div>
+                    <div class="text-[11px] text-gray-500">Invite friends to TikTok</div>
+                </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 48 48" fill="none"><path d="M19 12L31 24L19 36" stroke="#D1D1D3" stroke-width="4" stroke-linecap="round"/></svg>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
+            <div class="max-w-[550px] mx-auto">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <span class="text-gray-500 text-[13px]">Special offer</span>
+                    <span class="text-[#FE2C55] font-bold text-[13px]">Check 5% cashback ›</span>
+                </div>
+                <div class="flex items-center gap-3 mb-4 scale-90 origin-left">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" class="h-2.5">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" class="h-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" class="h-3.5">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" class="h-4">
+                </div>
+                <button onclick="openPaymentSheet()" class="w-full bg-[#FE2C55] text-white h-[48px] rounded-md font-bold text-[16px]">
+                    Recharge <span id="btn-price-label">$0.35</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="keypad-overlay" class="sheet-overlay" onclick="closeKeypad()">
+        <div class="bottom-sheet" id="keypad-sheet" onclick="event.stopPropagation()">
+            <div class="p-4 flex items-center justify-between border-b">
+                <button onclick="closeKeypad()"><svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M31 36L19 24L31 12" stroke-linecap="round"/></svg></button>
+                <h3 class="font-bold text-[17px]">Custom</h3>
+                <div class="w-8"></div>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center border border-gray-200 rounded-lg p-4 bg-white h-[64px]">
+                    <img src="coin.png" class="w-6 mr-3">
+                    <input type="text" id="custom-input" readonly placeholder="30 - 2,500,000" class="text-[26px] font-extrabold w-full outline-none">
+                </div>
+                <div id="price-estimation" class="mt-2 text-[13px] text-[#8A8B91]">$0.00</div>
+            </div>
+            <div class="grid grid-cols-4 gap-[1px] bg-gray-200 border-t border-b keypad-grid">
+                <button onclick="pressKey('1')">1</button><button onclick="pressKey('2')">2</button><button onclick="pressKey('3')">3</button>
+                <button onclick="pressKey('back')" class="bg-white flex items-center justify-center"><svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M18 10L4 24L18 38H44V10H18Z"/><path d="M25 19L35 29M35 19L25 29"/></svg></button>
+                <button onclick="pressKey('4')">4</button><button onclick="pressKey('5')">5</button><button onclick="pressKey('6')">6</button><button onclick="pressKey('000')">000</button>
+                <button onclick="pressKey('7')">7</button><button onclick="pressKey('8')">8</button><button onclick="pressKey('9')">9</button><button onclick="pressKey('0')">0</button>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="flex justify-between items-center mb-5"><span class="font-bold text-[18px]">Total</span><span class="font-bold text-[18px]" id="custom-total-price">$0.00</span></div>
+                <button id="btn-isi-ulang-custom" disabled class="w-full bg-[#FE2C55] opacity-40 text-white h-[48px] font-bold">Recharge</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-overlay" class="sheet-overlay" onclick="closePayment()">
+        <div class="bottom-sheet" id="payment-sheet" onclick="event.stopPropagation()">
+            <div class="p-4 flex items-center justify-between border-b relative">
+                <button onclick="closePayment()" class="p-1"><svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M31 36L19 24L31 12" stroke-linecap="round"/></svg></button>
+                <h3 class="font-bold text-[17px] absolute left-1/2 -translate-x-1/2">Order summary</h3>
+                <button class="text-gray-800"><svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44Z"/><path d="M24 28.6248V34.6248" stroke-linecap="round"/><path d="M24 22.6248C27.3137 22.6248 30 19.9385 30 16.6248C30 13.3111 27.3137 10.6248 24 10.6248C20.6863 10.6248 18 13.3111 18 16.6248" stroke-linecap="round"/></svg></button>
+            </div>
+
+            <div class="bg-[#F0FDF9] py-2 border-b border-[#D1FAE5] flex justify-center items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 48 48" fill="none" stroke="#00C49F" stroke-width="5"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44Z"/><path d="M16 24L22 30L34 18"/></svg>
+                <span class="text-[#00C49F] text-[13px] font-semibold">Secure payment</span>
+            </div>
+            
+            <div class="p-5">
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-[15px]">Account</span>
+                        <span class="font-bold text-[15px]" id="sum-username">garrzzz24</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-[15px]">Purchase <span id="sum-coins">30</span> Coins</span>
+                        <span class="font-bold text-[15px]" id="sum-price">$0.35</span>
+                    </div>
+                </div>
+
+                <hr class="mb-5 border-gray-50">
+
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-5">
+                        <span class="text-gray-500 text-[14px]">Payment method</span>
+                        <span class="text-gray-400 text-[12px] flex items-center font-medium">View others <svg width="12" height="12" viewBox="0 0 48 48" fill="none"><path d="M19 12L31 24L19 36" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="flex gap-1">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" class="h-2.5">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" class="h-3.5">
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-medium text-[15px] text-gray-800 leading-tight">Debit / Credit Card</span>
+                                    <span class="text-[12px] text-gray-400 font-medium">**** 8294</span>
+                                </div>
+                            </div>
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center relative">
+                                 <input type="radio" name="pay-method" checked class="absolute opacity-0 w-full h-full peer custom-radio">
+                                 <div class="w-3 h-3 bg-[#FE2C55] rounded-full hidden radio-dot peer-checked:block"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="policy-container" class="mb-5 relative">
+                    <div class="flex items-start gap-2">
+                        <div id="policy-content" class="text-[11px] text-gray-400 leading-[1.4] pr-1">
+                            By clicking <span class="font-bold text-gray-600">Pay now</span>, you agree to our <span class="font-bold text-gray-600">Virtual Items Policy</span>...
+                        </div>
+                        <button onclick="togglePolicy()" class="mt-0.5 flex-shrink-0 bg-gray-100 p-0.5 rounded">
+                            <svg id="policy-arrow" class="transition-transform duration-300" width="12" height="12" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="6"><path d="M12 18L24 30L36 18" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-end mb-4">
+                    <span class="text-[16px] font-bold text-gray-900">Total</span>
+                    <span class="text-[22px] font-[900] text-gray-900 leading-none" id="final-total">$0.35</span>
+                </div>
+                
+                <button onclick="startPaymentProcess()" class="w-full bg-[#FE2C55] text-white py-4 rounded-sm font-bold text-[16px]">Pay now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-overlay" class="fixed inset-0 z-[100] bg-black/50 hidden items-center justify-center p-4">
+        <div id="processing-box" class="popup-content hidden">
+            <div class="loader-dots"><div class="dot dot-red"></div><div class="dot dot-cyan"></div></div>
+            <h3 class="font-bold text-[17px] mt-4">Processing your payment</h3>
+            <div id="countdown-timer" class="text-[16px] font-medium mt-2">0:00</div>
+        </div>
+        <div id="success-box" class="popup-content hidden">
+            <div class="success-circle"><svg width="45" height="45" viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="7"><path d="M10 24L20 34L40 14" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h3 class="font-bold text-[20px] mb-2">Successful Recharge</h3>
+            <p class="text-[14px] text-gray-600 mb-1"><span id="success-coins">0</span> Coins sent to</p>
+            <p class="font-bold text-[#161823] mb-6" id="success-user">@username</p>
+            <button onclick="location.reload()" class="w-full bg-[#FE2C55] text-white py-3 rounded-md font-bold">Go Back</button>
+        </div>
+    </div>
+
+    <script>
+        let customInputVal = "";
+        function togglePolicy() { document.getElementById('policy-container').classList.toggle('expanded'); }
+        function updateUsernameDisplay() { 
+            const val = document.getElementById('username-input').value; 
+            const formattedUser = val.trim() !== "" ? val : "garrzzz24";
+            document.getElementById('sum-username').innerText = formattedUser; 
+        }
+
+        function selectCoin(el, koin, price) {
+            document.querySelectorAll('.item-card').forEach(c => c.classList.remove('active-card'));
+            if(el) el.classList.add('active-card');
+            const formatted = "$" + price.toFixed(2);
+            document.getElementById('btn-price-label').innerText = formatted;
+            document.getElementById('sum-coins').innerText = koin.toLocaleString();
+            document.getElementById('sum-price').innerText = formatted;
+            document.getElementById('final-total').innerText = formatted;
+        }
+
+        function openKeypad() { document.getElementById('keypad-overlay').classList.add('overlay-visible'); setTimeout(() => document.getElementById('keypad-sheet').classList.add('sheet-open'), 10); }
+        function closeKeypad() { document.getElementById('keypad-sheet').classList.remove('sheet-open'); setTimeout(() => document.getElementById('keypad-overlay').classList.remove('overlay-visible'), 300); }
+
+        function pressKey(key) {
+            const input = document.getElementById('custom-input');
+            const totalDisplay = document.getElementById('custom-total-price');
+            const btn = document.getElementById('btn-isi-ulang-custom');
+            if (key === 'back') { customInputVal = customInputVal.slice(0, -1); } 
+            else { if (customInputVal.length < 7) customInputVal += key; }
+            const val = customInputVal ? parseInt(customInputVal) : 0;
+            input.value = val > 0 ? val.toLocaleString() : "";
+            const price = (val * 0.01166667).toFixed(2);
+            totalDisplay.innerText = "$" + price;
+            if (val >= 30) {
+                btn.disabled = false; btn.classList.remove('opacity-40');
+                btn.onclick = () => { closeKeypad(); selectCoin(null, val, parseFloat(price)); openPaymentSheet(); };
+            } else { btn.disabled = true; btn.classList.add('opacity-40'); }
+        }
+
+        function openPaymentSheet() { updateUsernameDisplay(); document.getElementById('payment-overlay').classList.add('overlay-visible'); setTimeout(() => document.getElementById('payment-sheet').classList.add('sheet-open'), 10); }
+        function closePayment() { document.getElementById('payment-sheet').classList.remove('sheet-open'); setTimeout(() => document.getElementById('payment-overlay').classList.remove('overlay-visible'), 300); }
+
+        function startPaymentProcess() {
+            closePayment();
+            const overlay = document.getElementById('status-overlay');
+            const procBox = document.getElementById('processing-box');
+            const succBox = document.getElementById('success-box');
+            overlay.classList.replace('hidden', 'flex');
+            procBox.classList.remove('hidden');
+            let totalSeconds = Math.floor(Math.random() * 30) + 15;
+            const timer = setInterval(() => {
+                totalSeconds--;
+                let m = Math.floor(totalSeconds/60), s = totalSeconds%60;
+                document.getElementById('countdown-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+                if(totalSeconds <= 0) clearInterval(timer);
+            }, 1000);
+
+            setTimeout(() => {
+                clearInterval(timer);
+                document.getElementById('success-coins').innerText = document.getElementById('sum-coins').innerText;
+                document.getElementById('success-user').innerText = "@" + document.getElementById('sum-username').innerText;
+                procBox.classList.add('hidden');
+                succBox.classList.remove('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
